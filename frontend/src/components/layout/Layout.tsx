@@ -1,5 +1,6 @@
 import { Box, Typography } from "@mui/material";
 import { Routes, Route, Navigate } from "react-router-dom";
+import Home from "../views/Home";
 
 const Layout = () => {
   return (
@@ -15,16 +16,18 @@ const Layout = () => {
         flexGrow: 1
       }}
     >
-      <Typography variant="h2" gutterBottom>
+      <Typography variant="h2" fontWeight={300}>
         Orders
       </Typography>
       <Box sx={{
         border:"1px solid red",
         flexGrow: 1,
+        display: "flex",
+        flexDirection: "column",
       }}>
         <Routes>
-          <Route path="/" element={<h2>Order List</h2>} />
-          <Route path="/:id" element={<h2>Order Details</h2>} />
+          <Route path="/" element={<Home />} />
+          <Route path="/orders/:id" element={<h2>Order Details</h2>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Box>
