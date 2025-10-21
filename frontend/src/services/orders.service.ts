@@ -5,7 +5,6 @@ export async function getOrders(page: number = 1, pageSize: number = 10): Promis
   const response = await api.get<PaginatedResponse<Order>>(
     `/orders?page=${page}&page_size=${pageSize}`
   );
-  console.log("Fetched orders:", response.data);
   return response.data;
 }
 
