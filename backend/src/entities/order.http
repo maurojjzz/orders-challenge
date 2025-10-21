@@ -1,0 +1,36 @@
+### Create order (con status específico)
+POST http://localhost:3001/api/orders
+Content-Type: application/json
+
+{
+  "customer_name": "Jane Smith",
+  "item": "Rice",
+  "quantity": 1,
+  "status": "pending"
+}
+
+### Get order by ID
+GET http://localhost:3001/api/orders/21295f22-988d-4d68-8ae0-14c6282b7207
+
+### Update order status
+PUT http://localhost:3001/api/orders/21295f22-988d-4d68-8ae0-14c6282b7207
+Content-Type: application/json
+
+{
+  "status": "completed"
+}
+
+### Delete order
+DELETE http://localhost:3001/api/orders/6c2436d5-d70f-48ff-9449-8cf0342e6e41
+
+### Get all orders (sin paginación - usa defaults: page=1, page_size=10)
+GET http://localhost:3001/api/orders
+
+### Get all orders (página 1, 5 items por página)
+GET http://localhost:3001/api/orders?page=1&page_size=5
+
+### Get all orders (página 2, 5 items por página)
+GET http://localhost:3001/api/orders?page=2&page_size=5
+
+### Get all orders (página 1, 20 items por página)
+GET http://localhost:3001/api/orders?page=1&page_size=20

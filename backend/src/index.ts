@@ -1,6 +1,28 @@
-console.log('🚀 Servidor iniciado con TypeScript moderno!');
+import express from "express";
+import cors from "cors";
+import { RequestContext } from "@mikro-orm/core";
+import { orm, syncSchema } from "./shared/orm.js";
+import { router } from "./routes/index.js";
 
-// Ejemplo básico
-const PORT = process.env.PORT || 3001;
+import * as dotenv from "dotenv";
+dotenv.config();
 
-console.log(`📡 Puerto configurado: ${PORT}`);
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+app.use((req, res, next)=>{
+    RequestContext.create(orm.em, next);
+})
+
+app.use('/api', router);
+
+(async () => {
+    await syncSchema();
+    app.listen(process.env.PORT, () => {
+        console.log(`
+            \n-------------------------------\n
+Server running on port ${process.env.PORT}
+            \n-------------------------------\n`);
+    });
+})();
