@@ -126,7 +126,7 @@ const Modal = ({ info, setOpenModal, onDeleteClick }: ModalProps) => {
           sx={{ mt: "auto", display: "flex", alignItems: "center", gap: 1, outlineWidth: 3 }}
         >
           <Typography variant="body1" fontWeight={500} fontSize={22}>
-            Editar
+            Edit
           </Typography>
           <MdEdit fontSize="large" />
         </Button>
@@ -138,7 +138,7 @@ const Modal = ({ info, setOpenModal, onDeleteClick }: ModalProps) => {
           sx={{ mt: "15px", mb: 2, display: "flex", alignItems: "center", gap: 1 }}
         >
           <Typography variant="body1" fontWeight={500} fontSize={22}>
-            Eliminar
+            Delete
           </Typography>
           <MdDelete fontSize="large" />
         </Button>
