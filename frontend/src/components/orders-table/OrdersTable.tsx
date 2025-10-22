@@ -91,7 +91,7 @@ const OrdersTable = () => {
 
   const handleConfirmDelete = () => {
     if (orderToDelete) {
-      console.log("Deleting order:", orderToDelete);
+      // console.log("Deleting order:", orderToDelete);
       deleteOrderSelected(orderToDelete.id);
       setOpenDeleteModal(false);
       setOrderToDelete(null);
@@ -121,7 +121,7 @@ const OrdersTable = () => {
     })();
   }, []);
 
-  console.log("data", data);
+  // console.log("data", data);
 
   return (
     <Paper sx={{ marginTop: 2, maxWidth: "890px", width: "100%", boxShadow: 5 }}>
