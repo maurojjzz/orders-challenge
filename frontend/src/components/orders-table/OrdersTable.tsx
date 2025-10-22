@@ -19,21 +19,24 @@ import { getOrders, deleteOrder } from "../../services/orders.service.ts";
 import type { PaginatedResponse, Order } from "../../types/order.types.ts";
 import Modal from "../modal/Modal.tsx";
 import ConfirmDeleteModal from "../modal/ConfirmDeleteModal.tsx";
+import { useNavigate } from "react-router-dom";
 
 const OrdersTable = () => {
-  const [data, setData] = useState<PaginatedResponse<Order>>({
-    message: "",
-    data: [],
-    pagination: { page: 1, page_size: 10, total_items: 0, total_pages: 0, has_next: false, has_previous: false },
-  });
+  
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<Order | null>(null);
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
   const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
+  const [data, setData] = useState<PaginatedResponse<Order>>({
+    message: "",
+    data: [],
+    pagination: { page: 1, page_size: 10, total_items: 0, total_pages: 0, has_next: false, has_previous: false },
+  });
 
   const theme = useTheme();
+  const navigate = useNavigate();
 
   const pageIndex = Math.max(0, (data.pagination.page || 1) - 1);
   const rowsPerPage = data.pagination.page_size || 10;
@@ -230,7 +233,7 @@ const OrdersTable = () => {
                         style={{ cursor: "pointer", fontSize: 20 }}
                         onClick={(e) => {
                           e.stopPropagation();
-                          console.log("edit", row);
+                          navigate(`/orders/${row.id}`);
                         }}
                       />
                     </Tooltip>
