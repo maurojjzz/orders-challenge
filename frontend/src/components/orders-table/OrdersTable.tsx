@@ -20,6 +20,7 @@ import type { PaginatedResponse, Order } from "../../types/order.types.ts";
 import Modal from "../modal/Modal.tsx";
 import ConfirmDeleteModal from "../modal/ConfirmDeleteModal.tsx";
 import { useNavigate } from "react-router-dom";
+import { useNotification } from "../../context/NotificationContext.tsx";
 
 const OrdersTable = () => {
   
@@ -37,6 +38,7 @@ const OrdersTable = () => {
 
   const theme = useTheme();
   const navigate = useNavigate();
+  const { showNotification } = useNotification();
 
   const pageIndex = Math.max(0, (data.pagination.page || 1) - 1);
   const rowsPerPage = data.pagination.page_size || 10;
@@ -51,6 +53,7 @@ const OrdersTable = () => {
     } catch (e: unknown) {
       const err = e as { message?: string };
       setError(err?.message ?? "Error fetching orders");
+      showNotification("Failed to fetch orders. Please try again.", "error");
     } finally {
       setLoading(false);
     }
@@ -80,9 +83,11 @@ const OrdersTable = () => {
         ...prevData,
         data: prevData.data.filter((order) => order.id !== orderId),
       }));
+      showNotification("Order deleted successfully!", "success");
       return result;
     } catch (error) {
       console.error("Error deleting order:", error);
+      showNotification("Failed to delete order. Please try again.", "error");
       return undefined;
     } finally {
       setLoading(false);
@@ -91,7 +96,6 @@ const OrdersTable = () => {
 
   const handleConfirmDelete = () => {
     if (orderToDelete) {
-      // console.log("Deleting order:", orderToDelete);
       deleteOrderSelected(orderToDelete.id);
       setOpenDeleteModal(false);
       setOrderToDelete(null);
@@ -113,15 +117,15 @@ const OrdersTable = () => {
       } catch (e: unknown) {
         const err = e as { message?: string };
         setError(err?.message ?? "Error fetching orders");
+        showNotification("Failed to fetch orders. Please try again later.", "error");
       } finally {
         setTimeout(() => {
           setLoading(false);
         }, 1500);
       }
     })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // console.log("data", data);
 
   return (
     <Paper sx={{ marginTop: 2, maxWidth: "890px", width: "100%", boxShadow: 5 }}>

@@ -17,6 +17,7 @@ import { useState, useEffect } from "react";
 import type { OrderStatus } from "../../types/order.types.ts";
 import { useForm, Controller } from "react-hook-form";
 import { getOrderById, createOrder, updateOrder } from "../../services/orders.service.ts";
+import { useNotification } from "../../context/NotificationContext.tsx";
 
 type FormValues = {
   status: OrderStatus;
@@ -36,6 +37,7 @@ const Form = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const theme = useTheme();
+  const { showNotification } = useNotification();
 
   // console.log("Form component, id:", id);
 
@@ -67,23 +69,28 @@ const Form = () => {
   const onSubmit = async (values: FormValues) => {
     try {
       if (id) {
-        const updatedOrder = await updateOrder(id, values);
-        console.log("Order updated successfully:", updatedOrder);
+        await updateOrder(id, values);
+        showNotification("Order updated successfully!", "success");
       } else {
-        const newOrder = await createOrder({
+        await createOrder({
           ...values,
           quantity: values.quantity!,
         });
-        console.log("Order created successfully:", newOrder);
+        showNotification("Order created successfully!", "success");
       }
+      setTimeout(() => {
+        navigate("/");
+      }, 500);
     } catch (error) {
       console.error("Error submitting form:", error);
-    }finally{
+      showNotification(
+        id ? "Failed to update order. Please try again." : "Failed to create order. Please try again.",
+        "error"
+      );
       setTimeout(() => {
         navigate("/");
       }, 500);
     }
-
   };
 
   useEffect(() => {
@@ -102,6 +109,10 @@ const Form = () => {
           reset(fetchedOrder);
         } catch (error) {
           console.error("Error fetching order data:", error);
+          showNotification("Failed to load order data. Please try again.", "error");
+          setTimeout(() => {
+            navigate("/");
+          }, 2000);
         } finally {
           setTimeout(() => {
             setLoading(false);
@@ -113,7 +124,7 @@ const Form = () => {
         }, 1500);
       }
     })();
-  }, [id, reset]);
+  }, [id, reset, showNotification, navigate]);
 
   return (
     <Box

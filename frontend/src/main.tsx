@@ -9,14 +9,17 @@ import '@fontsource/poppins/500.css'
 import '@fontsource/poppins/700.css'
 import theme from './theme/theme'
 import Layout from './components/layout/Layout.tsx';
+import { NotificationProvider } from './context/NotificationContext.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router>
-        <Layout />
-      </Router>
+      <NotificationProvider>
+        <Router>
+          <Layout />
+        </Router>
+      </NotificationProvider>
     </ThemeProvider>
   </StrictMode>,
 )
