@@ -15,16 +15,40 @@ import { IoMdArrowRoundBack } from "react-icons/io";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import type { OrderStatus } from "../../types/order.types.ts";
-import type { SelectChangeEvent } from "@mui/material/Select";
+import { useForm, Controller } from "react-hook-form";
+import { getOrderById, createOrder, updateOrder } from "../../services/orders.service.ts";
+
+type FormValues = {
+  status: OrderStatus;
+  customer_name: string;
+  item: string;
+  quantity: number | undefined;
+};
 
 const Form = () => {
-  const [status, setStatus] = useState<OrderStatus>("pending");
   const [loading, setLoading] = useState<boolean>(false);
+  const [order, setOrder] = useState<FormValues>({
+    status: "pending",
+    customer_name: "",
+    item: "",
+    quantity: undefined,
+  });
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const theme = useTheme();
 
-  console.log("Form component, id:", id);
+  // console.log("Form component, id:", id);
+
+  const {
+    control,
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({
+    mode: "onBlur",
+    defaultValues: order,
+  });
 
   const getMenuItemStyles = (colorType: "warning" | "success" | "error") => ({
     backgroundColor: theme.palette[colorType].main,
@@ -40,21 +64,60 @@ const Form = () => {
     },
   });
 
-  const handleStatusChange = (event: SelectChangeEvent) => {
-    setStatus(event.target.value as OrderStatus);
+  const onSubmit = async (values: FormValues) => {
+    try {
+      if (id) {
+        const updatedOrder = await updateOrder(id, values);
+        console.log("Order updated successfully:", updatedOrder);
+      } else {
+        const newOrder = await createOrder({
+          ...values,
+          quantity: values.quantity!,
+        });
+        console.log("Order created successfully:", newOrder);
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }finally{
+      setTimeout(() => {
+        navigate("/");
+      }, 500);
+    }
+
   };
 
   useEffect(() => {
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-    }, 2000);
-  }, []);
+    (async () => {
+      if (id) {
+        try {
+          const orderData = await getOrderById(id);
+          const fetchedOrder = {
+            status: orderData.status,
+            customer_name: orderData.customer_name,
+            item: orderData.item,
+            quantity: orderData.quantity,
+          };
+          setOrder(fetchedOrder);
+          reset(fetchedOrder);
+        } catch (error) {
+          console.error("Error fetching order data:", error);
+        } finally {
+          setTimeout(() => {
+            setLoading(false);
+          }, 1500);
+        }
+      } else {
+        setTimeout(() => {
+          setLoading(false);
+        }, 1500);
+      }
+    })();
+  }, [id, reset]);
 
   return (
     <Box
       sx={{
-        border: "1px solid red",
         flexGrow: "1",
         display: "flex",
         flexDirection: "column",
@@ -63,10 +126,11 @@ const Form = () => {
       }}
     >
       {loading ? (
-        <CircularProgress size={260} color="success" sx={{ display: "block" }}/>
+        <CircularProgress size={260} color="success" sx={{ display: "block" }} />
       ) : (
         <Box
           component={"form"}
+          onSubmit={handleSubmit(onSubmit)}
           sx={{
             boxShadow: 5,
             maxWidth: "500px",
@@ -97,17 +161,24 @@ const Form = () => {
             <InputLabel id="select-status" sx={{ backgroundColor: "#ffffff" }}>
               Status
             </InputLabel>
-            <Select labelId="select-status" value={status} onChange={handleStatusChange} size="small">
-              <MenuItem value={"pending"} sx={getMenuItemStyles("warning")}>
-                Pending
-              </MenuItem>
-              <MenuItem value={"completed"} sx={getMenuItemStyles("success")}>
-                Completed
-              </MenuItem>
-              <MenuItem value={"cancelled"} sx={getMenuItemStyles("error")}>
-                Cancelled
-              </MenuItem>
-            </Select>
+            <Controller
+              name="status"
+              control={control}
+              rules={{ required: "Status is required" }}
+              render={({ field }) => (
+                <Select labelId="select-status" size="small" {...field} value={field.value} label="Status">
+                  <MenuItem value={"pending"} sx={getMenuItemStyles("warning")}>
+                    Pending
+                  </MenuItem>
+                  <MenuItem value={"completed"} sx={getMenuItemStyles("success")}>
+                    Completed
+                  </MenuItem>
+                  <MenuItem value={"cancelled"} sx={getMenuItemStyles("error")}>
+                    Cancelled
+                  </MenuItem>
+                </Select>
+              )}
+            />
           </FormControl>
 
           <TextField
@@ -115,6 +186,13 @@ const Form = () => {
             variant="outlined"
             size="small"
             sx={{ mt: 4, width: "90%" }}
+            {...register("customer_name", {
+              required: "Customer Name is required",
+              minLength: { value: 2, message: "Min 2 characters" },
+              maxLength: { value: 60, message: "Max 60 characters" },
+            })}
+            error={!!errors.customer_name}
+            helperText={errors.customer_name?.message}
           />
 
           <TextField
@@ -122,6 +200,13 @@ const Form = () => {
             variant="outlined"
             size="small"
             sx={{ mt: 4, width: "90%" }}
+            {...register("item", {
+              required: "Item Name is required",
+              minLength: { value: 2, message: "Min 2 characters" },
+              maxLength: { value: 60, message: "Max 60 characters" },
+            })}
+            error={!!errors.item}
+            helperText={errors.item?.message}
           />
 
           <TextField
@@ -130,23 +215,26 @@ const Form = () => {
             size="small"
             type="number"
             sx={{ mt: 4, width: "90%" }}
+            {...register("quantity", {
+              required: "Quantity is required",
+              min: { value: 1, message: "Min 1" },
+              max: { value: 100, message: "Max 100" },
+            })}
+            error={!!errors.quantity}
+            helperText={errors.quantity?.message}
           />
 
           <Box
-          sx={{
-            mt:4,
-            display:"flex",
-            flexDirection:"row",
-            justifyContent:"space-evenly",
-            width:"90%",
-          }}
+            sx={{
+              mt: 4,
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-evenly",
+              width: "90%",
+            }}
           >
-            <Button
-              variant="contained"
-              color="success"
-              sx={{ width: "120px"}}
-            >
-              Submit
+            <Button type="submit" disabled={isSubmitting} variant="contained" color="success" sx={{ width: "120px" }}>
+              {isSubmitting ? "Saving..." : "Submit"}
             </Button>
             <Button
               variant="outlined"
@@ -154,12 +242,11 @@ const Form = () => {
               onClick={() => {
                 navigate("/");
               }}
-              sx={{width: "120px"}}
+              sx={{ width: "120px" }}
             >
               Cancel
             </Button>
           </Box>
-
         </Box>
       )}
     </Box>
